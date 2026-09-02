@@ -1,0 +1,49 @@
+# Core AI/ML
+langchain
+langgraph
+langchain-groq
+groq
+sentence-transformers
+chromadb
+qdrant-client
+unstructured
+pytesseract
+transformers
+rank-bm25
+llama-index
+pypdf
+python-pptx
+Pillow
+# API & Web
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# Database & Caching
+redis
+sqlalchemy
+alembic
+
+# Observability
+langsmith
+loguru
+prometheus-client
+
+# Evaluation & Testing
+ragas
+pytest
+pytest-asyncio
+
+# Developer Tools
+python-dotenv
+rich
+typer
+ruff
+
+# Additional utilities
+httpx
+Pillow
+beautifulsoup4
+python-multipart
+aiofiles
