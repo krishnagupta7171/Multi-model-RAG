@@ -1,10 +1,9 @@
-"""Custom exceptions for the Multi-model-RAG system."""
+
 
 from typing import Any, Optional
 
 
 class RAGException(Exception):
-    """Base exception for all RAG system errors."""
 
     def __init__(
         self,
@@ -18,7 +17,6 @@ class RAGException(Exception):
         super().__init__(self.message)
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert exception to dictionary."""
         return {
             "error_type": self.__class__.__name__,
             "message": self.message,
@@ -27,20 +25,20 @@ class RAGException(Exception):
 
 
 class ConfigurationError(RAGException):
-    """Raised when there's a configuration issue."""
+    #Raised when there's a configuration issue
     pass
 
 
 class IngestionError(RAGException):
-    """Raised when document ingestion fails."""
+    #Raised when document ingestion fails
     pass
 
 
 class RetrievalError(RAGException):
-    """Raised when retrieval operations fail."""
+    #Raised when retrieval operations fail
     pass
 
 
 class GenerationError(RAGException):
-    """Raised when LLM generation fails."""
+    #Raised when LLM generation fails
     pass
