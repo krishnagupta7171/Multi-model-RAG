@@ -33,6 +33,17 @@ class Settings(BaseSettings):
         ge=0,
     )
 
+
+    # Embedding Configuration
+    embedding_model: str = Field(
+        default="sentence-transformers/all-MiniLM-L6-v2",
+    )
+
+    embedding_dimension: int = Field(
+        default=384,
+        ge=1,
+    )
+
  
 
 
