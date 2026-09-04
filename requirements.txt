@@ -14,6 +14,8 @@ llama-index
 pypdf
 python-pptx
 Pillow
+
+
 # API & Web
 fastapi
 uvicorn[standard]

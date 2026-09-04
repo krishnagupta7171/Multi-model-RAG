@@ -42,3 +42,7 @@ class RetrievalError(RAGException):
 class GenerationError(RAGException):
     #Raised when LLM generation fails
     pass
+
+class DatabaseError(RAGException):
+    #Raised when database operations fail.
+    pass

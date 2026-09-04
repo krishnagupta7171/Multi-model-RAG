@@ -1,5 +1,5 @@
 from functools import lru_cache
-
+from typing import Optional
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -23,26 +23,31 @@ class Settings(BaseSettings):
 
     # Chunking Configuration
 
-    chunk_size: int = Field(
-        default=512,
-        ge=100,
-    )
+    chunk_size: int = Field(default=512,ge=100,)
 
-    chunk_overlap: int = Field(
-        default=50,
-        ge=0,
-    )
+    chunk_overlap: int = Field(default=50,ge=0,)
 
 
     # Embedding Configuration
-    embedding_model: str = Field(
-        default="sentence-transformers/all-MiniLM-L6-v2",
-    )
+    embedding_model: str = Field(default="sentence-transformers/all-MiniLM-L6-v2",)
 
-    embedding_dimension: int = Field(
-        default=384,
-        ge=1,
-    )
+    embedding_dimension: int = Field(default=384,ge=1,)
+
+    # Application / Logging Configuration
+    environment: str = Field(default="development",)
+
+    log_level: str = Field(default="INFO",)
+
+    is_production: bool = Field(default=False,)
+
+    # Vector Database Configuration
+    vector_db_type: str = Field(default="chroma",description="Vector database type")
+
+    qdrant_url: str = Field(default="http://localhost:6333",description="Qdrant server URL")
+
+    qdrant_api_key: Optional[str] = Field(default=None,description="Qdrant API key")
+
+    chroma_persist_dir: str = Field(default="./data/chroma",description="ChromaDB persistence directory")
 
  
 
