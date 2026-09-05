@@ -1,6 +1,6 @@
 import pytest
 
-from src.database.vector_store import ChromaVectorStore
+from src.database.vector_database import ChromaVectorStore
 
 
 @pytest.mark.asyncio
