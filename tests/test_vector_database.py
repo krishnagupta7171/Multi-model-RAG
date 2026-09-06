@@ -5,9 +5,7 @@ from src.database.vector_database import ChromaVectorStore
 
 @pytest.mark.asyncio
 async def test_create_and_search_collection(tmp_path):
-    store = ChromaVectorStore(
-        persist_directory=str(tmp_path / "chroma")
-    )
+    store = ChromaVectorStore(persist_directory=str(tmp_path / "chroma"))
 
     collection_name = "test_collection"
 
@@ -46,16 +44,11 @@ async def test_create_and_search_collection(tmp_path):
 
 @pytest.mark.asyncio
 async def test_delete_documents(tmp_path):
-    store = ChromaVectorStore(
-        persist_directory=str(tmp_path / "chroma")
-    )
+    store = ChromaVectorStore(persist_directory=str(tmp_path / "chroma"))
 
     collection_name = "delete_test"
 
-    await store.create_collection(
-        name=collection_name,
-        dimension=3,
-    )
+    await store.create_collection(name=collection_name,dimension=3,)
 
     await store.add_documents(
         collection_name=collection_name,
@@ -65,10 +58,7 @@ async def test_delete_documents(tmp_path):
         metadata=[{"source": "test.txt"}],
     )
 
-    await store.delete_documents(
-        collection_name=collection_name,
-        ids=["doc_1"],
-    )
+    await store.delete_documents(collection_name=collection_name,ids=["doc_1"],)
 
     results = await store.search(
         collection_name=collection_name,
