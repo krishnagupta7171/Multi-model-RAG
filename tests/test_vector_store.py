@@ -56,7 +56,6 @@ async def test_retriever_empty_metadata_sanitization(mock_vector_store, mock_emb
     )
 
     texts = ["Sample text"]
-    # Passing empty metadata should be sanitized so ChromaDB won't crash
     await retriever.add_texts(texts=texts, metadata=[{}])
 
     call_args = mock_vector_store.add_documents.call_args[1]

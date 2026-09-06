@@ -48,7 +48,10 @@ async def test_delete_documents(tmp_path):
 
     collection_name = "delete_test"
 
-    await store.create_collection(name=collection_name,dimension=3,)
+    await store.create_collection(
+        name=collection_name,
+        dimension=3,
+    )
 
     await store.add_documents(
         collection_name=collection_name,
@@ -58,7 +61,10 @@ async def test_delete_documents(tmp_path):
         metadata=[{"source": "test.txt"}],
     )
 
-    await store.delete_documents(collection_name=collection_name,ids=["doc_1"],)
+    await store.delete_documents(
+        collection_name=collection_name,
+        ids=["doc_1"],
+    )
 
     results = await store.search(
         collection_name=collection_name,
