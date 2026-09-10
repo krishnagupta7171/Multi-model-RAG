@@ -46,3 +46,7 @@ class GenerationError(RAGException):
 class DatabaseError(RAGException):
     #Raised when database operations fail.
     pass
+
+class AgentError(RAGException):
+    # Raised when agent or agent tool operations fail
+    pass
