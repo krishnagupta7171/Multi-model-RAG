@@ -14,7 +14,7 @@ llama-index
 pypdf
 python-pptx
 Pillow
-
+tavily
 
 # API & Web
 fastapi
