@@ -50,3 +50,7 @@ class DatabaseError(RAGException):
 class AgentError(RAGException):
     # Raised when agent or agent tool operations fail
     pass
+
+class CacheError(RAGException):
+    
+    pass
