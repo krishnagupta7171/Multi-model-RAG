@@ -193,9 +193,3 @@ def _generate_sample_test_file(path: Path) -> None:
 if __name__ == "__main__":
     app()
 
-
-
-
-
-
-
