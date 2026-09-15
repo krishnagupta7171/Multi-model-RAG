@@ -52,5 +52,4 @@ class AgentError(RAGException):
     pass
 
 class CacheError(RAGException):
-    
     pass
