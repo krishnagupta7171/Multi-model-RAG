@@ -50,7 +50,10 @@ class Settings(BaseSettings):
     chroma_persist_dir: str = Field(default="./data/chroma",description="ChromaDB persistence directory")
 
  
-
+    # Observability / LangSmith Configuration
+    langsmith_tracing: bool = Field(default=False, description="Enable LangSmith tracing")
+    langsmith_api_key: Optional[str] = Field(default=None, description="LangSmith API key")
+    langsmith_project: str = Field(default="Multi-modal-RAG", description="LangSmith project name")
 
 @lru_cache()
 def get_settings() -> Settings:
