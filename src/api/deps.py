@@ -2,7 +2,7 @@ import uuid
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException, status
-
+from ..agents.multimodal_agent import MultimodalRAGAgent
 from ..generation.LLMGenerator import LLMGenerator
 from ..observability.logging import get_logger
 from ..retrieval.vector_store import VectorStore
@@ -14,7 +14,7 @@ logger = get_logger(__name__)
 # Cached global singleton references
 _vector_store: Optional[VectorStore] = None
 _llm_generator: Optional[LLMGenerator] = None
-
+_rag_agent: Optional[MultimodalRAGAgent] = None
 
 def get_settings_dependency() -> Settings:
     
@@ -37,9 +37,18 @@ def get_vector_store_dependency(settings: Settings = Depends(get_settings_depend
     
     global _vector_store
     if _vector_store is None:
-        _vector_store = VectorStore()
+        #_vector_store = VectorStore()
+        pass
     return _vector_store
 
+
+def get_rag_agent_dependency(vector_store: VectorStore = Depends(get_vector_store_dependency),
+    llm_generator: LLMGenerator = Depends(get_llm_generator_dependency),) -> MultimodalRAGAgent:
+    global _rag_agent
+    if _rag_agent is None:
+        _rag_agent = MultimodalRAGAgent(retriever=vector_store,llm_client=llm_generator,
+        )
+    return _rag_agent
 
 def get_request_id(x_request_id: Optional[str] = Header(default=None)) -> str:
     
