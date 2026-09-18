@@ -5,14 +5,14 @@ from fastapi import Depends, Header, HTTPException, status
 from ..agents.multimodal_agent import MultimodalRAGAgent
 from ..generation.LLMGenerator import LLMGenerator
 from ..observability.logging import get_logger
-from ..retrieval.vector_store import VectorStore
+from ..retrieval.vector_store import VectorStoreRetriever, get_retriever
 from ..utils.cache import CacheManager, get_cache_manager
 from ..utils.config import Settings, get_settings
 
 logger = get_logger(__name__)
 
 # Cached global singleton references
-_vector_store: Optional[VectorStore] = None
+_vector_store: Optional[VectorStoreRetriever] = None
 _llm_generator: Optional[LLMGenerator] = None
 _rag_agent: Optional[MultimodalRAGAgent] = None
 
@@ -32,21 +32,21 @@ def get_llm_generator_dependency(settings: Settings = Depends(get_settings_depen
         _llm_generator = LLMGenerator()
     return _llm_generator
 
-
-def get_vector_store_dependency(settings: Settings = Depends(get_settings_dependency),) -> VectorStore:
+async def get_retriever_dependency(settings: Settings = Depends(get_settings_dependency),) -> VectorStoreRetriever:
     
-    global _vector_store
-    if _vector_store is None:
-        #_vector_store = VectorStore()
-        pass
-    return _vector_store
+    global _retriever
+    if _retriever is None:
+        collection_name = getattr(settings, "vector_store_collection", "documents")
+        _retriever = await get_retriever(collection_name=collection_name)
+    return _retriever
 
 
-def get_rag_agent_dependency(vector_store: VectorStore = Depends(get_vector_store_dependency),
-    llm_generator: LLMGenerator = Depends(get_llm_generator_dependency),) -> MultimodalRAGAgent:
+
+
+def get_rag_agent_dependency(retriever: VectorStoreRetriever = Depends(get_retriever_dependency),llm_generator: LLMGenerator = Depends(get_llm_generator_dependency),) -> MultimodalRAGAgent:
     global _rag_agent
     if _rag_agent is None:
-        _rag_agent = MultimodalRAGAgent(retriever=vector_store,llm_client=llm_generator,
+        _rag_agent = MultimodalRAGAgent(retriever=retriever,llm_client=llm_generator,
         )
     return _rag_agent
 
