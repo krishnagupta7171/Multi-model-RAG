@@ -1,0 +1,63 @@
+
+system:
+  name: "Multi-Modal RAG Agent"
+  version: "0.1.0"
+  environment: "development"
+  prompt_path: "configs/prompts/system_prompt.txt"
+
+llm:
+  provider: "gemini"  
+  model: "gemini-3.5"
+  temperature: 0.3
+  max_tokens: 4096
+  timeout: 60
+
+embeddings:
+  model: "sentence-transformers/all-MiniLM-L6-v2"
+  dimension: 384
+  batch_size: 32
+
+database:
+  provider: "chroma"
+  persist_directory: "data/chroma"
+  collection_name: "documents"
+
+retrieval:
+  top_k: 5
+  rerank_top_k: 3
+  strategy: "hybrid" 
+  hybrid_alpha: 0.6  
+
+chunking:
+  strategy: "recursive"
+  chunk_size: 512
+  chunk_overlap: 50
+  separators:
+    - "\n\n"
+    - "\n"
+    - ". "
+    - " "
+
+agent:
+  max_iterations: 8
+  use_reflection: true
+  reflection_threshold: 7.0
+  tools:
+    - knowledge_base_tool
+    - math_tool
+    - external_search
+    - code_executor
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 2
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://127.0.0.1:8000"
+  rate_limit: 60  
+
+observability:
+  log_level: "INFO"
+  enable_system_metrics: true
+  enable_tracing: true
