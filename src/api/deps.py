@@ -12,7 +12,7 @@ from ..utils.config import Settings, get_settings
 logger = get_logger(__name__)
 
 # Cached global singleton references
-_vector_store: Optional[VectorStoreRetriever] = None
+_retriever: Optional[VectorStoreRetriever] = None
 _llm_generator: Optional[LLMGenerator] = None
 _rag_agent: Optional[MultimodalRAGAgent] = None
 
