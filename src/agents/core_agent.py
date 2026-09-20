@@ -1,5 +1,3 @@
-"""Core agent base class, execution state, and tool abstractions."""
-
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 from typing import Any, Dict, List, Optional
