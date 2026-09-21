@@ -1,25 +1,31 @@
 # Virtual Environment
 venv/
 .venv/
+env/
+ENV/
 
-# Python cache
+# Python cache & compiled binaries
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
 
 # Environment variables
 .env
 .env.*
 !.env.example
 
-# Testing
+# Testing & Coverage
 .pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
 
-# IDE
+# IDE & Editor files
 .vscode/
 .idea/
+*.swp
+*.swo
 
 # OS files
 .DS_Store
@@ -29,17 +35,23 @@ Thumbs.db
 *.log
 logs/
 
-# Data
-data/
+# Data & Persistence
+data/*
+!data/.gitkeep
+!data/raw/.gitkeep
+!data/chroma/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
 
-# Vector databases
+# Chroma & local cache
 chroma/
-qdrant_data/
+.cache/
 
-# Build files
+# Build & Packaging
 build/
 dist/
 *.egg-info/
 
-# Jupyter
+# Jupyter Notebooks
 .ipynb_checkpoints/
