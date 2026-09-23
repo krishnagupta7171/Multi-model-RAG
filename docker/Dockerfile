@@ -1,3 +1,4 @@
+
 FROM python:3.10-slim AS builder
 
 WORKDIR /app
@@ -16,8 +17,8 @@ RUN pip install --no-cache-dir --user \
 
 RUN pip install --no-cache-dir --user -r requirements.txt
 
-RUN find /root/.local -type d -name "tests" -exec rm -rf {} + 2>/dev/null || true \
-    && find /root/.local -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true \
+# Remove only bytecode and cache directories, do NOT delete 'tests'
+RUN find /root/.local -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true \
     && find /root/.local -name "*.pyc" -delete 2>/dev/null || true
 
 
