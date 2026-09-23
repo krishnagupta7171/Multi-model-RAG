@@ -1,6 +1,7 @@
 import time
 from contextlib import asynccontextmanager
-
+from fastapi import Response
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -113,10 +114,13 @@ async def root():
         "health": "/api/v1/health",
     }
 
+@app.get("/metrics", tags=["Observability"])
+async def metrics():
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 
 @app.get("/api/v1")
 async def api_info():
-    """API version information."""
     return {
         "version": "v1",
         "endpoints": {
