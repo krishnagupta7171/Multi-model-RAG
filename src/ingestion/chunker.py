@@ -10,12 +10,7 @@ from .loader import Document
 class TextChunk:
     #Text chunk with metadata
 
-    def __init__(
-        self,
-        text: str,
-        metadata: Dict[str, Any],
-        chunk_id: str,
-    ):
+    def __init__(self,text: str,metadata: Dict[str, Any],chunk_id: str,):
         self.text = text
         self.metadata = metadata
         self.chunk_id = chunk_id
@@ -204,34 +199,21 @@ class SemanticChunker:
 class DocumentChunker:
     #Main document chunking service.
 
-    def __init__(
-        self,
-        chunk_size: Optional[int] = None,
-        chunk_overlap: Optional[int] = None,
-        strategy: str = "recursive",
-    ):
+    def __init__(self,chunk_size: Optional[int] = None,
+        chunk_overlap: Optional[int] = None,strategy: str = "recursive",):
         settings = get_settings()
 
-        self.chunk_size = (
-            chunk_size if chunk_size is not None else settings.chunk_size
-        )
-        self.chunk_overlap = (
-            chunk_overlap
+        self.chunk_size = (chunk_size if chunk_size is not None else settings.chunk_size)
+        self.chunk_overlap = (chunk_overlap
             if chunk_overlap is not None
             else settings.chunk_overlap
         )
         self.strategy = strategy
 
         if strategy == "recursive":
-            self.splitter = RecursiveCharacterSplitter(
-                chunk_size=self.chunk_size,
-                chunk_overlap=self.chunk_overlap,
-            )
+            self.splitter = RecursiveCharacterSplitter(chunk_size=self.chunk_size,chunk_overlap=self.chunk_overlap,)
         elif strategy == "semantic":
-            self.splitter = SemanticChunker(
-                chunk_size=self.chunk_size,
-                chunk_overlap=self.chunk_overlap,
-            )
+            self.splitter = SemanticChunker(chunk_size=self.chunk_size,chunk_overlap=self.chunk_overlap,)
         else:
             raise ValueError(
                 f"Unknown chunking strategy: {strategy}"
@@ -240,9 +222,7 @@ class DocumentChunker:
     def chunk_document(self,document: Document,doc_id_prefix: str = "",) -> list[TextChunk]:
         #Chunk a single document.
 
-        text_chunks = self.splitter.split_text(
-            document.content
-        )
+        text_chunks = self.splitter.split_text(document.content)
 
         chunks = []
 
@@ -267,16 +247,17 @@ class DocumentChunker:
 
         return chunks
 
-    def chunk_documents(
-        self,
-        documents: list[Document],
-    ) -> list[TextChunk]:
+    def chunk_documents(self,documents: list[Document],) -> list[TextChunk]:
         #Chunk multiple documents.
 
         all_chunks = []
 
-        for document in documents:
-            chunks = self.chunk_document(document)
+        for doc_idx,document in documents:
+            if len(documents) > 1:
+                prefix = f"p{doc_idx}_"
+            else:
+                prefix = ""
+            chunks = self.chunk_document(document,doc_id_prefix=prefix,)
             all_chunks.extend(chunks)
 
         return all_chunks
@@ -288,7 +269,6 @@ _chunker: Optional[DocumentChunker] = None
 
 
 def get_chunker() -> DocumentChunker:
-    """Get global document chunker instance."""
 
     global _chunker
 

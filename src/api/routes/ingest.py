@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from langsmith import uuid
 
 from src.api.deps import (get_request_id,get_retriever_dependency,verify_api_key,)
 from src.api.payload import BatchIngestRequest, IngestRequest, IngestResponse
@@ -142,7 +143,10 @@ async def upload_file(file: UploadFile = File(...),retriever: VectorStoreRetriev
     request_id: str = Depends(get_request_id),api_key: str = Depends(verify_api_key),) -> IngestResponse:
     trace_event("ingest_started", {"request_id": request_id, "mode": "upload", "filename": file.filename})
 
-    suffix = Path(file.filename).suffix if file.filename else ".tmp"
+    if file.filename:
+        suffix = Path(file.filename).suffix
+    else:
+        suffix = ".tmp"
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         content = await file.read()
         tmp.write(content)
@@ -155,15 +159,14 @@ async def upload_file(file: UploadFile = File(...),retriever: VectorStoreRetriev
         chunker = get_chunker()
         chunks = chunker.chunk_documents(documents)
 
+        safe_stem = Path(file.filename or "doc").stem
+        short_uuid = uuid.uuid4().hex[:6]
+
         texts = [chunk.text for chunk in chunks]
         metadata = [{**chunk.metadata, "filename": file.filename} for chunk in chunks]
-        ids = [chunk.chunk_id for chunk in chunks]
+        ids = [f"{safe_stem}_{short_uuid}_{i}" for i in range(len(chunks))]
 
-        document_ids = await retriever.add_texts(
-            texts=texts,
-            metadata=metadata,
-            ids=ids,
-        )
+        document_ids = await retriever.add_texts(texts=texts,metadata=metadata,ids=ids,)
 
         trace_event("ingest_completed", {"request_id": request_id, "chunks": len(chunks)})
 
