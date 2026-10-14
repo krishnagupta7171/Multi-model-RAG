@@ -1,9 +1,10 @@
 services:
   rag-api:
+    image: multimodal-rag-api:latest
+    container_name: multimodal-rag-api
     build:
       context: ..
       dockerfile: docker/Dockerfile
-    container_name: multimodal-rag-api
     ports:
       - "8000:8000"
     environment:
@@ -19,6 +20,7 @@ services:
       - DATABASE_URL=sqlite:////app/data/rag_system.db
       - CHROMA_PERSIST_DIRECTORY=/app/data/chroma
     volumes:
+      - ../src:/app/src
       - rag-data:/app/data
       - ../logs:/app/logs
     depends_on:

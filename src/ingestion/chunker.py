@@ -252,7 +252,7 @@ class DocumentChunker:
 
         all_chunks = []
 
-        for doc_idx,document in documents:
+        for doc_idx,document in enumerate(documents):
             if len(documents) > 1:
                 prefix = f"p{doc_idx}_"
             else:

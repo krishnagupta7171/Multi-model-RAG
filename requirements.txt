@@ -49,3 +49,5 @@ Pillow
 beautifulsoup4
 python-multipart
 aiofiles
+streamlit
+requests

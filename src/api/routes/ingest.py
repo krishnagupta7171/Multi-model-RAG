@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
-from langsmith import uuid
+import uuid
 
 from src.api.deps import (get_request_id,get_retriever_dependency,verify_api_key,)
 from src.api.payload import BatchIngestRequest, IngestRequest, IngestResponse
@@ -19,6 +19,15 @@ logger = get_logger(__name__)
 
 router = APIRouter(prefix="/ingest", tags=["Ingestion"])
 
+
+def _sanitize_metadata(metadata: dict, filename: str) -> dict:
+    cleaned = {
+        k: (v if isinstance(v, (str, int, float, bool)) else str(v))
+        for k, v in metadata.items()
+        if v is not None
+    }
+    cleaned["filename"] = filename or ""
+    return cleaned
 
 @router.post("", response_model=IngestResponse, status_code=status.HTTP_201_CREATED)
 async def ingest_document(request: IngestRequest,retriever: VectorStoreRetriever = Depends(get_retriever_dependency),
@@ -36,7 +45,7 @@ async def ingest_document(request: IngestRequest,retriever: VectorStoreRetriever
             documents = [
                 Document(
                     content=request.text,
-                    metadata=request.metadata,
+                    metadata=_sanitize_metadata(request.metadata or {}, filename=Path(request.file_path  or "text_input").name),   
                 )
             ]
         else:
@@ -48,15 +57,15 @@ async def ingest_document(request: IngestRequest,retriever: VectorStoreRetriever
         chunker = get_chunker()
         chunks = chunker.chunk_documents(documents)
 
+        short_id = uuid.uuid4().hex[:6]
         texts = [chunk.text for chunk in chunks]
-        metadata = [chunk.metadata for chunk in chunks]
-        ids = [chunk.chunk_id for chunk in chunks]
+        metadata = [
+            _sanitize_metadata(chunk.metadata, Path(request.file_path or "text").name)
+            for chunk in chunks
+]
+        ids = [f"doc_{short_id}_{i}" for i in range(len(chunks))]
 
-        document_ids = await retriever.add_texts(
-            texts=texts,
-            metadata=metadata,
-            ids=ids,
-        )
+        document_ids = await retriever.add_texts(texts=texts,metadata=metadata,ids=ids,)
 
         trace_event("ingest_completed", {"request_id": request_id, "chunks": len(chunks)})
 
@@ -121,9 +130,13 @@ async def ingest_directory(request: BatchIngestRequest,retriever: VectorStoreRet
     chunker = get_chunker()
     chunks = chunker.chunk_documents(loaded_documents)
 
+    short_id = uuid.uuid4().hex[:6]
     texts = [chunk.text for chunk in chunks]
-    metadata = [chunk.metadata for chunk in chunks]
-    ids = [chunk.chunk_id for chunk in chunks]
+    metadata = [
+        _sanitize_metadata(chunk.metadata, chunk.metadata.get("source", "batch"))
+        for chunk in chunks
+    ]
+    ids = [f"doc_{short_id}_{i}" for i in range(len(chunks))]
 
     document_ids = await retriever.add_texts(texts=texts,metadata=metadata,ids=ids,)
 
@@ -163,7 +176,10 @@ async def upload_file(file: UploadFile = File(...),retriever: VectorStoreRetriev
         short_uuid = uuid.uuid4().hex[:6]
 
         texts = [chunk.text for chunk in chunks]
-        metadata = [{**chunk.metadata, "filename": file.filename} for chunk in chunks]
+        metadata = [
+            _sanitize_metadata(chunk.metadata, file.filename or "")
+            for chunk in chunks
+        ]
         ids = [f"{safe_stem}_{short_uuid}_{i}" for i in range(len(chunks))]
 
         document_ids = await retriever.add_texts(texts=texts,metadata=metadata,ids=ids,)
