@@ -18,6 +18,21 @@ class BM25Retriever:
         self.doc_ids: List[str] = []
         self.bm25: Optional[BM25Okapi] = None
 
+    def add_documents(self, documents: List[Tuple[str, str]]) -> None:
+        if not documents:
+            return
+
+        new_ids = [doc_id for doc_id, _ in documents]
+        new_texts = [text for _, text in documents]
+
+        self.doc_ids.extend(new_ids)
+        self.corpus.extend(new_texts)
+
+        # Tokenize entire accumulated corpus
+        tokenized_corpus = [doc.lower().split() for doc in self.corpus]
+        self.bm25 = BM25Okapi(tokenized_corpus)
+        logger.info(f"BM25 index updated. Total chunks in corpus: {len(self.corpus)}")
+
     def index_documents(self,documents: List[Tuple[str, str]],) -> None:
 #        Index documents for BM25 retrieval.
         logger.info(f"Indexing {len(documents)} documents for BM25")
@@ -37,8 +52,8 @@ class BM25Retriever:
         # Search the BM25 index for the given query. and return the top_k results as a list of (doc_id, score) tuples.
         # raise RetrievalError if the BM25 index is not initialized. Log the number of results found.
         if self.bm25 is None or not self.doc_ids:
-            raise RetrievalError("BM25 index not initialized. Call index_documents first.")
-
+            logger.debug("BM25 index is empty. Returning 0 results.")
+            return []
         if not query.strip():
             return []
         
@@ -78,6 +93,24 @@ class HybridRetriever:
         self.alpha = alpha  # Dense weight
         self.settings = get_settings()
 
+    async def add_texts(self,texts: List[str],metadata: Optional[List[dict]] = None,ids: Optional[List[str]] = None,) -> List[str]:
+        # Add texts to both the vector retriever and BM25 retriever.
+        if not texts:
+            return []
+        # 1. Index in ChromaDB (Dense)
+        doc_ids = await self.vector_retriever.add_texts(texts=texts, metadata=metadata, ids=ids)
+        effective_ids = doc_ids or ids or [f"doc_{i}" for i in range(len(texts))]
+
+        # 2. Index in BM25 (Sparse)
+        bm25_pairs = list(zip(effective_ids, texts))
+        self.bm25_retriever.add_documents(bm25_pairs)
+
+        return effective_ids
+
+    async def similarity_search(self,query: str,top_k: Optional[int] = None,) -> List[Tuple[str, float, str]]:
+        
+        return await self.search(query=query, top_k=top_k)
+    
     async def index_documents(self,documents: List[Tuple[str, str]],) -> None:
        # Index documents for both BM25 and vector retrieval.
        #  The documents should be a list of (doc_id, text) tuples.
