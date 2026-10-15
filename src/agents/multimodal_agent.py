@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional, TypedDict
 
 from langgraph.graph import END, StateGraph
+from typer.cli import docs, docs, state
 
 from .core_agent import BaseAgent
 from .tools.external_search import ExternalSearchTool
@@ -145,7 +146,17 @@ class MultimodalRAGAgent(BaseAgent):
         context_chunks = [d["content"] for d in docs]
 
         if self.llm_client:
-            prompt = f"Answer the user query: {query}\n\nContext:\n" + "\n---\n".join(context_chunks)
+            context_block = "\n---\n".join(context_chunks) if context_chunks else "No relevant context found."
+            prompt = (
+                "You are a strict, factual assistant. Your ONLY job is to answer the user question based on the provided Context.\n"
+                "RULES:\n"
+                "1. Answer ONLY using information explicitly stated in the Context.\n"
+                "2. If the Context does NOT contain the answer, explicitly state: 'The provided document does not mention [requested topic].'\n"
+                "3. Do NOT guess, extrapolate, or use outside knowledge.\n\n"
+                f"Context:\n{context_block}\n\n"
+                f"User Question: {query}\n\n"
+                "Answer:"
+            )
             state["answer"] = await self.llm_client.generate(prompt=prompt)
         else:
             state["answer"] = f"Synthesized response for query: '{query}' with {len(docs)} context chunk(s)."
@@ -160,6 +171,9 @@ class MultimodalRAGAgent(BaseAgent):
     
         logger.info("Reflection node evaluating generated answer")
         state["iterations"] = state.get("iterations", 0) + 1
+        docs = state.get("retrieved_documents", [])
+        context_texts = [d["content"] for d in docs]
+
 
         if self.llm_client and hasattr(self.llm_client, "reflect"):
             state["reflection"] = await self.llm_client.reflect(
